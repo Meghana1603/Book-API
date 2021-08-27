@@ -2,6 +2,11 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require('mongoose');
 
+//importing different Schema's
+const Book = require("./schema/book");
+const Author = require("./schema/author");
+const Publication = require("./schema/publication");
+
 //database
 const Database = require("./database");
 
@@ -26,8 +31,9 @@ OurApp.get("/", (request, response) => {
 // Method  - GET
 // Params  - none
 // Body    - none
-OurApp.get("/book",(req,res) => {
-    return res.json({ books: Database.Book});
+OurApp.get("/book",async (req,res) => {
+    const getAllBooks = await Book.find();
+    return res.json(getAllBooks);
 });
 
 // Route   - /book/:bookID
@@ -36,11 +42,16 @@ OurApp.get("/book",(req,res) => {
 // Method  - GET
 // Params  - bookID
 // Body    - none
-OurApp.get("/book/:bookID", (req, res) => {
-    const getBook = Database.Book.filter((book) => 
-    book.ISBN == req.params.bookID
-    );
-    return res.json({ book: getBook });
+OurApp.get("/book/:bookID", async (req, res) => {
+    const getSpecificBook = await Book.findOne({ISBN: req.params.bookID});
+    
+    if(!getSpecificBook){
+        return res.json({
+            error: `No book found for the ISBN of ${req.params.bookID}`,
+        });
+    }
+
+    return res.json({ book: getSpecificBook });
 });
 
 // Route   - /book/c/:category
@@ -124,11 +135,19 @@ OurApp.get("/publication/:publicationID", (req, res) => {
 // Access  - Public
 // Method  - POST
 // Params  - none
-OurApp.post("/book/new", (req, res) => {
-    const { newBook } = req.body;
-    //add new data
-    Database.Book.push(newBook);
-    return res.json(Database.Book);
+OurApp.post("/book/new", async (req, res) => {
+    try{
+        const { newBook } = req.body;
+
+        const bookExist = await Book.findOne({ISBN: newBook.ISBN});
+        if(!bookExist){
+            await Book.create(newBook);
+            return res.json({message: "Book added to the database"});
+        }
+        return res.json({message: `Book with same ISBN: ${newBook.ISBN} is already present in the database`});
+    } catch(error){
+        return res.json({error: error.message});
+    }
 });
 
 // Route   - /author/new
