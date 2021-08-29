@@ -11,8 +11,9 @@ const BookModel = require("../schema/book");
 // Access  - Public
 // Method  - GET
 // Params  - none
-// Body    - none
-Router.get("/book",async (req,res) => {
+// Body    - none 
+//✅
+Router.get("/",async (req,res) => {
     const getAllBooks = await BookModel.find();
     return res.json({book: getAllBooks});
 });
@@ -25,7 +26,8 @@ Router.get("/book",async (req,res) => {
 // Method  - GET
 // Params  - bookID
 // Body    - none
-Router.get("/book/:bookID", async (req, res) => {
+//✅
+Router.get("/:bookID", async (req, res) => {
     const getSpecificBook = await BookModel.findOne({ISBN: req.params.bookID});
     
     if(!getSpecificBook){
@@ -45,8 +47,9 @@ Router.get("/book/:bookID", async (req, res) => {
 // Method  - GET
 // Params  - category
 // Body    - none
-Router.get("/book/c/:category", async (req, res) => {
-    const getSpecificBooks = await BookModel.findOne({
+//✅
+Router.get("/c/:category", async (req, res) => {
+    const getSpecificBooks = await BookModel.find({
         category: req.params.category,
     });
 
@@ -67,8 +70,9 @@ Router.get("/book/c/:category", async (req, res) => {
 // Method  - GET
 // Params  - authorID
 // Body    - none
-Router.get("/book/a/:authorID", async (req, res) => {
-    const getSpecificBooks = await BookModel.findOne({
+//✅
+Router.get("/a/:authorID", async (req, res) => {
+    const getSpecificBooks = await BookModel.find({
         authors: parseInt(req.params.authorID),
     });
 
@@ -89,7 +93,8 @@ Router.get("/book/a/:authorID", async (req, res) => {
 // Access  - Public
 // Method  - POST
 // Params  - none
-Router.post("/book/new", async (req, res) => {
+//✅
+Router.post("/new", async (req, res) => {
     try{
         const { newBook } = req.body;
 
@@ -112,18 +117,26 @@ Router.post("/book/new", async (req, res) => {
 // Access  - Public
 // Method  - PUT
 // Params  - ISBN
-Router.put("/book/update/:isbn", (req, res) => {
+//✅
+Router.put("/update/:isbn", async (req, res) => {
     const { updatedBook } = req.body;
     const { isbn } = req.params;
 
-    const book = Database.Book.map((book) => {
-        if(book.ISBN === isbn) {
-            return {...book, ...updatedBook}
+    const updateBook = await BookModel.findOneAndUpdate(
+        {
+            ISBN: isbn
+        },
+        {
+            $set: {
+                    ...updatedBook, 
+                },
+        },
+        {
+            new: true
         }
-        return book;
-    });
+    );
 
-    return res.json(book);
+    return res.json({ book: updateBook });
 });
 
 
@@ -133,7 +146,8 @@ Router.put("/book/update/:isbn", (req, res) => {
 // Access  - Public
 // Method  - PUT
 // Params  - ISBN
-Router.put("/book/updateAuthor/:isbn", async (req, res) => {
+//✅
+Router.put("/updateAuthor/:isbn", async (req, res) => {
     const { newAuthor } = req.body;
     const { isbn } = req.params;
 
@@ -143,7 +157,7 @@ Router.put("/book/updateAuthor/:isbn", async (req, res) => {
         },
         {
             $addToSet: {
-                authors: newAuthor
+                authors: parseInt(newAuthor)
             },
         },
         {
@@ -153,7 +167,7 @@ Router.put("/book/updateAuthor/:isbn", async (req, res) => {
 
     const updatedAuthor = await AuthorModel.findOneAndUpdate(
         {
-            id: newAuthor
+            id: parseInt(newAuthor)
         },
         {
             $addToSet: {
@@ -174,8 +188,9 @@ Router.put("/book/updateAuthor/:isbn", async (req, res) => {
 // Access  - Public
 // Method  - PUT
 // Params  - id
-Router.put("/book/updateTitle/:isbn", async (req, res) => {
-    const { title } = req.body.title;
+//✅
+Router.put("/updateTitle/:isbn", async (req, res) => {
+    const { title } = req.body;
 
     const updateBook = await BookModel.findOneAndUpdate(
         {
@@ -202,7 +217,8 @@ Router.put("/book/updateTitle/:isbn", async (req, res) => {
 // Access  - Public
 // Method  - DELETE
 // Params  - isbn
-Router.delete("/book/delete/:isbn", async (req, res) => {
+//✅
+Router.delete("/delete/:isbn", async (req, res) => {
     const { isbn } = req.params;
 
     const updateBookDatabase = await BookModel.findOneAndDelete({
@@ -218,9 +234,9 @@ Router.delete("/book/delete/:isbn", async (req, res) => {
 // Access  - Public
 // Method  - DELETE
 // Params  - isbn, id
-Router.delete("/book/delete/author/:isbn/:Id", async (req, res) => {
+//✅
+Router.delete("/delete/author/:isbn/:id", async (req, res) => {
     const { isbn, id } = req.params;
-
     const updateBook = await BookModel.findOneAndUpdate(
         {
             ISBN: isbn,

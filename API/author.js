@@ -10,7 +10,8 @@ const AuthorModel = require("../schema/author");
 // Method  - GET
 // Params  - none
 // Body    - none
-Router.get("/author", async (req,res) => {
+//✅
+Router.get("/", async (req,res) => {
     const getAllAuthors = await AuthorModel.find();
     return res.json({author: getAllAuthors});
 });
@@ -23,7 +24,8 @@ Router.get("/author", async (req,res) => {
 // Method  - GET
 // Params  - authorID
 // Body    - none
-Router.get("/author/:authorID", async (req, res) => {
+//✅
+Router.get("/:authorID", async (req, res) => {
     const getSpecificAuthor = await AuthorModel.findOne({
         id: parseInt(req.params.authorID)});
     
@@ -44,7 +46,8 @@ Router.get("/author/:authorID", async (req, res) => {
 // Access  - Public
 // Method  - POST
 // Params  - none
-Router.post("/author/new", async (req, res) => {
+//✅
+Router.post("/new", async (req, res) => {
     try{
         const { newAuthor } = req.body;
 
@@ -67,18 +70,26 @@ Router.post("/author/new", async (req, res) => {
 // Access  - Public
 // Method  - PUT
 // Params  - id
-Router.put("/author/update/:id", (req, res) => {
+//✅
+Router.put("/update/:id", async (req, res) => {
     const { updatedAuthor } = req.body;
     const { id } = req.params;
 
-    const author = Database.Author.map((author) => {
-        if(author.id === parseInt(id)) {
-            return {...author, ...updatedAuthor}
+    const updateAuthor = await AuthorModel.findOneAndUpdate(
+        {
+            id: parseInt(id),
+        },
+        {
+            $set: {
+                    ...updatedAuthor, 
+                },
+        },
+        {
+            new: true
         }
-        return author;
-    });
+    );
 
-    return res.json(author);
+    return res.json({ author: updateAuthor });
 });
 
 
@@ -87,8 +98,9 @@ Router.put("/author/update/:id", (req, res) => {
 // Access  - Public
 // Method  - PUT
 // Params  - id
-Router.put("/author/updateName/:id", async (req, res) => {
-    const { name } = req.body.name;
+//✅
+Router.put("/updateName/:id", async (req, res) => {
+    const { name } = req.body;
 
     const updateAuthor = await AuthorModel.findOneAndUpdate(
         {
@@ -115,7 +127,8 @@ Router.put("/author/updateName/:id", async (req, res) => {
 // Access  - Public
 // Method  - DELETE
 // Params  - id
-Router.delete("/author/delete/:id", async (req, res) => {
+//✅
+Router.delete("/delete/:id", async (req, res) => {
     const { id } = req.params;
 
     const updateAuthorDatabase = await AuthorModel.findOneAndDelete({
